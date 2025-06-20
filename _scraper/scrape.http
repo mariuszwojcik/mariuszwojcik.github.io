@@ -7,3 +7,9 @@ GET https://mwojcik.azurewebsites.net/content/images/2019/01/Header-1.jpg
 
 ### favicon.ico
 GET https://mwojcik.azurewebsites.net/favicon.ico
+
+### Introduction-to-Markov-Chains-in-F----vimeo.png
+GET https://mwojcik.azurewebsites.net/content/images/2019/05/Introduction-to-Markov-Chains-in-F----vimeo.png
+
+### A-Simple-Bid-Recommendation-Engine-Using-FParsec-and-CodeDom---vimeo.png
+GET  https://mwojcik.azurewebsites.net/content/images/2019/05/A-Simple-Bid-Recommendation-Engine-Using-FParsec-and-CodeDom---vimeo.png
