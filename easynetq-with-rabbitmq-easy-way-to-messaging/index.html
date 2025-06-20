@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <title>EasyNetQ with RabbitMQ – easy way to messaging</title>
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" type="text/css" href="/assets/built/screen.css?v=8cb40155b8" />
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="canonical" href="https://www.mariuszwojcik.com/easynetq-with-rabbitmq-easy-way-to-messaging/" />
+    <meta name="referrer" content="no-referrer-when-downgrade" />
+    <link rel="amphtml" href="https://www.mariuszwojcik.com/easynetq-with-rabbitmq-easy-way-to-messaging/amp/" />
+    
+    <meta property="og:site_name" content="Mariusz Wojcik" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="EasyNetQ with RabbitMQ – easy way to messaging" />
+    <meta property="og:description" content="Few people have asked me already how to start using RabbitMQ in .NET, so I decided to write a short post about it. Installation First, visit erlang’s page, download erlang distribution according to your system (either 32 or 64 bit) and install it. If you have 64 bit machine" />
+    <meta property="og:url" content="https://www.mariuszwojcik.com/easynetq-with-rabbitmq-easy-way-to-messaging/" />
+    <meta property="article:published_time" content="2014-05-08T16:30:00.000Z" />
+    <meta property="article:modified_time" content="2018-11-03T16:32:40.000Z" />
+    <meta property="article:tag" content="RabbitMQ" />
+    <meta property="article:tag" content="EasyNetQ" />
+    
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="EasyNetQ with RabbitMQ – easy way to messaging" />
+    <meta name="twitter:description" content="Few people have asked me already how to start using RabbitMQ in .NET, so I decided to write a short post about it. Installation First, visit erlang’s page, download erlang distribution according to your system (either 32 or 64 bit) and install it. If you have 64 bit machine" />
+    <meta name="twitter:url" content="https://www.mariuszwojcik.com/easynetq-with-rabbitmq-easy-way-to-messaging/" />
+    <meta name="twitter:label1" content="Written by" />
+    <meta name="twitter:data1" content="Mariusz Wojcik" />
+    <meta name="twitter:label2" content="Filed under" />
+    <meta name="twitter:data2" content="RabbitMQ, EasyNetQ" />
+    <meta name="twitter:site" content="@WojcikMariusz" />
+    
+    <script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "publisher": {
+        "@type": "Organization",
+        "name": "Mariusz Wojcik",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "https://www.mariuszwojcik.com/favicon.ico",
+            "width": 60,
+            "height": 60
+        }
+    },
+    "author": {
+        "@type": "Person",
+        "name": "Mariusz Wojcik",
+        "image": {
+            "@type": "ImageObject",
+            "url": "https://www.mariuszwojcik.com/content/images/2018/10/me.jpg",
+            "width": 200,
+            "height": 200
+        },
+        "url": "https://www.mariuszwojcik.com/author/mariusz/",
+        "sameAs": []
+    },
+    "headline": "EasyNetQ with RabbitMQ – easy way to messaging",
+    "url": "https://www.mariuszwojcik.com/easynetq-with-rabbitmq-easy-way-to-messaging/",
+    "datePublished": "2014-05-08T16:30:00.000Z",
+    "dateModified": "2018-11-03T16:32:40.000Z",
+    "keywords": "RabbitMQ, EasyNetQ",
+    "description": "Few people have asked me already how to start using RabbitMQ in .NET, so I decided to write a short post about it. Installation First, visit erlang’s page, download erlang distribution according to your system (either 32 or 64 bit) and install it. If you have 64 bit machine",
+    "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://www.mariuszwojcik.com/"
+    }
+}
+    </script>
+
+    <script src="/public/ghost-sdk.min.js?v=8cb40155b8"></script>
+<script>
+ghost.init({
+	clientId: "ghost-frontend",
+	clientSecret: "4bee7de3b59d"
+});
+</script>
+    <meta name="generator" content="Ghost 2.1" />
+    <link rel="alternate" type="application/rss+xml" title="Mariusz Wojcik" href="https://www.mariuszwojcik.com/rss/" />
+     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/themes/prism.min.css" />
+<meta name="msvalidate.01" content="2AA206BBF39F5AFAB7A70AFF62E11ABE" />
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-55432606-3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-55432606-3');
+</script>
+
+</head>
+<body class="post-template tag-rabbitmq tag-easynetq">
+
+    <div class="site-wrapper">
+
+        
+
+<header class="site-header outer">
+    <div class="inner">
+        <nav class="site-nav">
+    <div class="site-nav-left">
+                <a class="site-nav-logo" href="https://www.mariuszwojcik.com">Mariusz Wojcik</a>
+            <ul class="nav" role="menu">
+    <li class="nav-home" role="menuitem"><a href="https://www.mariuszwojcik.com/">Home</a></li>
+    <li class="nav-author" role="menuitem"><a href="https://www.mariuszwojcik.com/about-me/">Author</a></li>
+    <li class="nav-github" role="menuitem"><a href="https://github.com/mariuszwojcik">GitHub</a></li>
+    <li class="nav-presentations" role="menuitem"><a href="https://www.mariuszwojcik.com/presentations/">Presentations</a></li>
+</ul>
+
+    </div>
+    <div class="site-nav-right">
+        <div class="social-links">
+                <a class="social-link social-link-tw" href="https://twitter.com/WojcikMariusz" target="_blank" rel="noopener"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M30.063 7.313c-.813 1.125-1.75 2.125-2.875 2.938v.75c0 1.563-.188 3.125-.688 4.625a15.088 15.088 0 0 1-2.063 4.438c-.875 1.438-2 2.688-3.25 3.813a15.015 15.015 0 0 1-4.625 2.563c-1.813.688-3.75 1-5.75 1-3.25 0-6.188-.875-8.875-2.625.438.063.875.125 1.375.125 2.688 0 5.063-.875 7.188-2.5-1.25 0-2.375-.375-3.375-1.125s-1.688-1.688-2.063-2.875c.438.063.813.125 1.125.125.5 0 1-.063 1.5-.25-1.313-.25-2.438-.938-3.313-1.938a5.673 5.673 0 0 1-1.313-3.688v-.063c.813.438 1.688.688 2.625.688a5.228 5.228 0 0 1-1.875-2c-.5-.875-.688-1.813-.688-2.75 0-1.063.25-2.063.75-2.938 1.438 1.75 3.188 3.188 5.25 4.25s4.313 1.688 6.688 1.813a5.579 5.579 0 0 1 1.5-5.438c1.125-1.125 2.5-1.688 4.125-1.688s3.063.625 4.188 1.813a11.48 11.48 0 0 0 3.688-1.375c-.438 1.375-1.313 2.438-2.563 3.188 1.125-.125 2.188-.438 3.313-.875z"/></svg>
+</a>
+        </div>
+            <a class="rss-button" href="https://feedly.com/i/subscription/feed/https://www.mariuszwojcik.com/rss/" target="_blank" rel="noopener"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="6.18" cy="17.82" r="2.18"/><path d="M4 4.44v2.83c7.03 0 12.73 5.7 12.73 12.73h2.83c0-8.59-6.97-15.56-15.56-15.56zm0 5.66v2.83c3.9 0 7.07 3.17 7.07 7.07h2.83c0-5.47-4.43-9.9-9.9-9.9z"/></svg>
+</a>
+    </div>
+</nav>
+    </div>
+</header>
+
+
+<main id="site-main" class="site-main outer">
+    <div class="inner">
+
+        <article class="post-full post tag-rabbitmq tag-easynetq no-image">
+
+            <header class="post-full-header">
+                <section class="post-full-meta">
+                    <time class="post-full-meta-date" datetime="2014-05-08">8 May 2014</time>
+                        <span class="date-divider">/</span> <a href="/tag/rabbitmq/">RabbitMQ</a>
+                </section>
+                <h1 class="post-full-title">EasyNetQ with RabbitMQ – easy way to messaging</h1>
+            </header>
+
+
+            <section class="post-full-content">
+                <div class="post-content">
+                    <p>Few people have asked me already how to start using <a href="http://www.rabbitmq.com/">RabbitMQ</a> in .NET, so I decided to write a short post about it.</p>
+<h1 id="installation">Installation</h1>
+<p>First, visit erlang’s page, <a href="http://www.erlang.org/download.html">download erlang</a> distribution according to your system (either 32 or 64 bit) and install it. If you have 64 bit machine (and you really should have) than get the 64 bit distribution, otherwise erlang process won’t be able to address more than 2GB of memory.</p>
+<p>Next <a href="http://www.rabbitmq.com/download.html">download RabbitMQ server</a> and install it. I strongly recommend to install <a href="http://www.rabbitmq.com/management.html">Management Plugin</a>, which comes with <a href="http://www.rabbitmq.com/">RabbitMQ</a> installation. All you need to do is run following command from command prompt (you may have to navigate to RabbitMQ’s sbin folder):</p>
+<pre><code>rabbitmq-plugins enable rabbitmq_management
+</code></pre>
+<p>There are detailed instructions on Management Plugin and its installation at <a href="http://www.rabbitmq.com/management.html">http://www.rabbitmq.com/management.html</a>.</p>
+<p>Additionally, you may find useful <a href="https://github.com/mariuszwojcik/RabbitMQTools">RabbitMQTools</a> – a power shell module for managing <a href="http://www.rabbitmq.com/">RabbitMQ</a> servers.</p>
+<!--more-->
+<h1 id="easynetq">EasyNetQ</h1>
+<p>Although pivotal provides a great .NET library for working with <a href="http://www.rabbitmq.com/">RabbitMQ</a>, there is even better solution which will be sufficient in most cases – <a href="http://easynetq.com/">EasyNetQ</a>. <a href="http://easynetq.com/">EasyNetQ</a> provides nice abstraction over some low level concepts of <a href="http://www.rabbitmq.com/">RabbitMQ</a>, such as topology registration, messages serialisation or error handling. It also gives an easy interface to work with some popular messaging patters such as Publish / Subscribe or Message Bus.</p>
+<h1 id="helloworld">Hello World!</h1>
+<p>Lets create our first application. Start new console application project in Visual Studio and name it <code>ConsumerApplication</code>.</p>
+<p>Add EasyNetQ nuget package:</p>
+<pre><code>Install-Package EasyNetQ
+</code></pre>
+<p>and replace <code>Main.cs</code> code with following:</p>
+<pre><code class="language-csharp">using System;
+using EasyNetQ;
+
+namespace ConsumerApplication
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            var bus = RabbitHutch.CreateBus(&quot;host=localhost&quot;);
+
+            bus.Subscribe&lt;string&gt;(&quot;consumer1&quot;, message =&gt;
+            {
+                Console.WriteLine(message);
+            });
+        }
+    }
+}
+</code></pre>
+<p>Now, add new console application project to the solution and call it <code>ProducerApplication</code>. You also have to add <code>EasyNetQ</code> nuget package to this project.<br>
+Replace Main.cs code with following:</p>
+<pre><code class="language-csharp">using EasyNetQ;
+
+namespace PublisherApplication
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            var bus = RabbitHutch.CreateBus(&quot;host=localhost&quot;);
+
+            bus.Publish(&quot;Hello World!&quot;);
+        }
+    }
+}
+</code></pre>
+<p>To run the example, first right click on the <em>ConsumerApplication</em> project and select <em>Debug &gt; Start new instance</em>. This will run the ConsumerApplication. Next, do that same on the PublisherApplication and you should see that in the ConsumerApplication window there is a lot of diagnostics information printed and right at the bottom there is the <em>Hello World!</em> message.</p>
+<h1 id="howitworks">How it works</h1>
+<p>Under the bonnet <a href="http://easynetq.com/">EasyNetQ</a> is doing quite a work to make all this happen. When publishing the message, <a href="http://easynetq.com/">EasyNetQ</a> performs a check to see whether the related Exchange exists in <a href="http://www.rabbitmq.com/">RabbitMQ</a> and if it doesn’t than creates it. On the other hand, call to Subscribe method will verify whether both exchange and queue exists and they are bound together. As you can see in the console windows, <a href="http://easynetq.com/">EasyNetQ</a> runs quite verbose diagnostics which are priceless when it comes to debugging. If there was a problem with consuming the message, such as exception thrown by consumer code, then it will be automatically moved to error queue for further analysis. You can also rely on <a href="http://easynetq.com/">EasyNetQ</a> to manage connections to <a href="http://www.rabbitmq.com/">RabbitMQ</a> server so you do not need to worry when the connection was dropped etc.</p>
+<h1 id="summary">Summary</h1>
+<p>As you can see from the above example it is very easy to start with messaging using combination of <a href="http://www.rabbitmq.com/">RabbitMQ</a> and <a href="http://easynetq.com/">EasyNetQ</a>.<br>
+From serialising / de-serialising messages, diagnostics and error handling, managing connection to managing topology – all handled automatically by <a href="http://easynetq.com/">EasyNetQ</a> so you can concentrate your efforts on making awesome applications. As you will see in the <a href="/blog/using-complex-type-messages-with-easynetq/">second article</a>, working with complex type messages is no more complicated.</p>
+
+                </div>
+            </section>
+
+
+            <footer class="post-full-footer">
+
+
+                    
+<section class="author-card">
+        <img class="author-profile-image" src="/content/images/2018/10/me.jpg" alt="Mariusz Wojcik" />
+    <section class="author-card-content">
+        <h4 class="author-card-name"><a href="/author/mariusz/">Mariusz Wojcik</a></h4>
+            <p>Read <a href="/author/mariusz/">more posts</a> by this author.</p>
+    </section>
+</section>
+<div class="post-full-footer-right">
+    <a class="author-card-button" href="/author/mariusz/">Read More</a>
+</div>
+
+
+            </footer>
+
+
+        </article>
+
+    </div>
+</main>
+
+<aside class="read-next outer">
+    <div class="inner">
+        <div class="read-next-feed">
+                <article class="read-next-card"
+                            style="background-image: url(/content/images/2019/01/Header-1.jpg)"
+                >
+                    <header class="read-next-card-header">
+                        <small class="read-next-card-header-sitetitle">&mdash; Mariusz Wojcik &mdash;</small>
+                        <h3 class="read-next-card-header-title"><a href="/tag/rabbitmq/">RabbitMQ</a></h3>
+                    </header>
+                    <div class="read-next-divider"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 14.5s2 3 5 3 5.5-2.463 5.5-5.5S21 6.5 18 6.5c-5 0-7 11-12 11C2.962 17.5.5 15.037.5 12S3 6.5 6 6.5s4.5 3.5 4.5 3.5"/></svg>
+</div>
+                    <div class="read-next-card-content">
+                        <ul>
+                            <li><a href="/performance-of-delayed-message-exchange/">Performance of Delayed Message Exchange</a></li>
+                            <li><a href="/rabbitmq-gets-support-for-delayed-messages-delivery/">RabbitMQ gets support for delayed messages delivery</a></li>
+                            <li><a href="/cost-comparison-between-azure-service-bus-queues-and-rabbitmq/">Cost comparison between Azure Service Bus Queues and RabbitMQ</a></li>
+                        </ul>
+                    </div>
+                    <footer class="read-next-card-footer">
+                        <a href="/tag/rabbitmq/">See all 4 posts →</a>
+                    </footer>
+                </article>
+
+                <article class="post-card post tag-easynetq no-image">
+    <div class="post-card-content">
+        <a class="post-card-content-link" href="/using-complex-type-messages-with-easynetq/">
+            <header class="post-card-header">
+                    <span class="post-card-tags">EasyNetQ</span>
+                <h2 class="post-card-title">Using complex type messages with EasyNetQ</h2>
+            </header>
+            <section class="post-card-excerpt">
+                <p>This is the second post in series about EasyNetQ. In the first post I am explaining how to install RabbitMQ and write simple application which publishes and consumes string messages. Complex type message</p>
+            </section>
+        </a>
+        <footer class="post-card-meta">
+
+            <ul class="author-list">
+                <li class="author-list-item">
+
+                    <div class="author-name-tooltip">
+                        Mariusz Wojcik
+                    </div>
+
+                        <a href="/author/mariusz/" class="static-avatar"><img class="author-profile-image" src="/content/images/2018/10/me.jpg" alt="Mariusz Wojcik" /></a>
+                </li>
+            </ul>
+
+            <span class="reading-time">2 min read</span>
+
+        </footer>
+    </div>
+</article>
+
+                <article class="post-card post tag-powershell no-image">
+    <div class="post-card-content">
+        <a class="post-card-content-link" href="/invoke-restmethod-cmdlet-proxy-more-on-un-escaping-forward-slashes-in-uris/">
+            <header class="post-card-header">
+                    <span class="post-card-tags">PowerShell</span>
+                <h2 class="post-card-title">Invoke-RestMethod cmdlet proxy – more on un-escaping forward slashes in URIs</h2>
+            </header>
+            <section class="post-card-excerpt">
+                <p>Recently I posted an article showing how to prevent Invoke-RestMethod from unescaping dots and slashes. Soon after that I got a great advice from Dave Wyatt, moderator for powershell.org forum. What he</p>
+            </section>
+        </a>
+        <footer class="post-card-meta">
+
+            <ul class="author-list">
+                <li class="author-list-item">
+
+                    <div class="author-name-tooltip">
+                        Mariusz Wojcik
+                    </div>
+
+                        <a href="/author/mariusz/" class="static-avatar"><img class="author-profile-image" src="/content/images/2018/10/me.jpg" alt="Mariusz Wojcik" /></a>
+                </li>
+            </ul>
+
+            <span class="reading-time">2 min read</span>
+
+        </footer>
+    </div>
+</article>
+
+        </div>
+    </div>
+</aside>
+
+<div class="floating-header">
+    <div class="floating-header-logo">
+        <a href="https://www.mariuszwojcik.com">
+            <span>Mariusz Wojcik</span>
+        </a>
+    </div>
+    <span class="floating-header-divider">&mdash;</span>
+    <div class="floating-header-title">EasyNetQ with RabbitMQ – easy way to messaging</div>
+    <div class="floating-header-share">
+        <div class="floating-header-share-label">Share this <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M7.5 15.5V4a1.5 1.5 0 1 1 3 0v4.5h2a1 1 0 0 1 1 1h2a1 1 0 0 1 1 1H18a1.5 1.5 0 0 1 1.5 1.5v3.099c0 .929-.13 1.854-.385 2.748L17.5 23.5h-9c-1.5-2-5.417-8.673-5.417-8.673a1.2 1.2 0 0 1 1.76-1.605L7.5 15.5zm6-6v2m-3-3.5v3.5m6-1v2"/>
+</svg>
+</div>
+        <a class="floating-header-share-tw" href="https://twitter.com/share?text=EasyNetQ%20with%20RabbitMQ%20%E2%80%93%20easy%20way%20to%20messaging&amp;url=https://www.mariuszwojcik.com/easynetq-with-rabbitmq-easy-way-to-messaging/"
+            onclick="window.open(this.href, 'share-twitter', 'width=550,height=235');return false;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M30.063 7.313c-.813 1.125-1.75 2.125-2.875 2.938v.75c0 1.563-.188 3.125-.688 4.625a15.088 15.088 0 0 1-2.063 4.438c-.875 1.438-2 2.688-3.25 3.813a15.015 15.015 0 0 1-4.625 2.563c-1.813.688-3.75 1-5.75 1-3.25 0-6.188-.875-8.875-2.625.438.063.875.125 1.375.125 2.688 0 5.063-.875 7.188-2.5-1.25 0-2.375-.375-3.375-1.125s-1.688-1.688-2.063-2.875c.438.063.813.125 1.125.125.5 0 1-.063 1.5-.25-1.313-.25-2.438-.938-3.313-1.938a5.673 5.673 0 0 1-1.313-3.688v-.063c.813.438 1.688.688 2.625.688a5.228 5.228 0 0 1-1.875-2c-.5-.875-.688-1.813-.688-2.75 0-1.063.25-2.063.75-2.938 1.438 1.75 3.188 3.188 5.25 4.25s4.313 1.688 6.688 1.813a5.579 5.579 0 0 1 1.5-5.438c1.125-1.125 2.5-1.688 4.125-1.688s3.063.625 4.188 1.813a11.48 11.48 0 0 0 3.688-1.375c-.438 1.375-1.313 2.438-2.563 3.188 1.125-.125 2.188-.438 3.313-.875z"/></svg>
+        </a>
+        <a class="floating-header-share-fb" href="https://www.facebook.com/sharer/sharer.php?u=https://www.mariuszwojcik.com/easynetq-with-rabbitmq-easy-way-to-messaging/"
+            onclick="window.open(this.href, 'share-facebook','width=580,height=296');return false;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M19 6h5V0h-5c-3.86 0-7 3.14-7 7v3H8v6h4v16h6V16h5l1-6h-6V7c0-.542.458-1 1-1z"/></svg>
+        </a>
+    </div>
+    <progress id="reading-progress" class="progress" value="0">
+        <div class="progress-container">
+            <span class="progress-bar"></span>
+        </div>
+    </progress>
+</div>
+
+
+
+
+        <footer class="site-footer outer">
+            <div class="site-footer-content inner">
+                <section class="copyright"><a href="https://www.mariuszwojcik.com">Mariusz Wojcik</a> &copy; 2025</section>
+                <nav class="site-footer-nav">
+                    <a href="https://www.mariuszwojcik.com">Latest Posts</a>
+                    
+                    <a href="https://twitter.com/WojcikMariusz" target="_blank" rel="noopener">Twitter</a>
+                    <a href="https://ghost.org" target="_blank" rel="noopener">Ghost</a>
+                </nav>
+            </div>
+        </footer>
+
+    </div>
+
+
+    <script>
+        var images = document.querySelectorAll('.kg-gallery-image img');
+        images.forEach(function (image) {
+            var container = image.closest('.kg-gallery-image');
+            var width = image.attributes.width.value;
+            var height = image.attributes.height.value;
+            var ratio = width / height;
+            container.style.flex = ratio + ' 1 0%';
+        })
+    </script>
+
+
+    <script
+        src="https://code.jquery.com/jquery-3.2.1.min.js"
+        integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+        crossorigin="anonymous">
+    </script>
+    <script type="text/javascript" src="/assets/js/jquery.fitvids.js?v=8cb40155b8"></script>
+
+
+    <script>
+
+// NOTE: Scroll performance is poor in Safari
+// - this appears to be due to the events firing much more slowly in Safari.
+//   Dropping the scroll event and using only a raf loop results in smoother
+//   scrolling but continuous processing even when not scrolling
+$(document).ready(function () {
+    // Start fitVids
+    var $postContent = $(".post-full-content");
+    $postContent.fitVids();
+    // End fitVids
+
+    var progressBar = document.querySelector('#reading-progress');
+    var header = document.querySelector('.floating-header');
+    var title = document.querySelector('.post-full-title');
+
+    var lastScrollY = window.scrollY;
+    var lastWindowHeight = window.innerHeight;
+    var lastDocumentHeight = $(document).height();
+    var ticking = false;
+
+    function onScroll() {
+        lastScrollY = window.scrollY;
+        requestTick();
+    }
+
+    function onResize() {
+        lastWindowHeight = window.innerHeight;
+        lastDocumentHeight = $(document).height();
+        requestTick();
+    }
+
+    function requestTick() {
+        if (!ticking) {
+            requestAnimationFrame(update);
+        }
+        ticking = true;
+    }
+
+    function update() {
+        var trigger = title.getBoundingClientRect().top + window.scrollY;
+        var triggerOffset = title.offsetHeight + 35;
+        var progressMax = lastDocumentHeight - lastWindowHeight;
+
+        // show/hide floating header
+        if (lastScrollY >= trigger + triggerOffset) {
+            header.classList.add('floating-active');
+        } else {
+            header.classList.remove('floating-active');
+        }
+
+        progressBar.setAttribute('max', progressMax);
+        progressBar.setAttribute('value', lastScrollY);
+
+        ticking = false;
+    }
+
+    window.addEventListener('scroll', onScroll, {passive: true});
+    window.addEventListener('resize', onResize, false);
+
+    update();
+
+});
+</script>
+
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/prism.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/components/prism-csharp.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/components/prism-fsharp.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/components/prism-markup.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/components/prism-powershell.min.js"></script>
+
+</body>
+</html>

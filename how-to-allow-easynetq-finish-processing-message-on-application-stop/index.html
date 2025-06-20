@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <title>How to allow EasyNetQ finish processing message on application stop</title>
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" type="text/css" href="/assets/built/screen.css?v=8cb40155b8" />
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="canonical" href="https://www.mariuszwojcik.com/how-to-allow-easynetq-finish-processing-message-on-application-stop/" />
+    <meta name="referrer" content="no-referrer-when-downgrade" />
+    <link rel="amphtml" href="https://www.mariuszwojcik.com/how-to-allow-easynetq-finish-processing-message-on-application-stop/amp/" />
+    
+    <meta property="og:site_name" content="Mariusz Wojcik" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="How to allow EasyNetQ finish processing message on application stop" />
+    <meta property="og:description" content="This post was written as an answer to one of the questions on EasyNetQ user group.The main principle of [EasyNetQ][1] bus is simplicity. It greatly abstracts nuances of communicating with RabbitMQ giving developers time to concentrate on writing the core application. The framework is great and makes processing" />
+    <meta property="og:url" content="https://www.mariuszwojcik.com/how-to-allow-easynetq-finish-processing-message-on-application-stop/" />
+    <meta property="article:published_time" content="2014-05-10T16:19:00.000Z" />
+    <meta property="article:modified_time" content="2018-11-03T16:23:05.000Z" />
+    <meta property="article:tag" content="EasyNetQ" />
+    
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="How to allow EasyNetQ finish processing message on application stop" />
+    <meta name="twitter:description" content="This post was written as an answer to one of the questions on EasyNetQ user group.The main principle of [EasyNetQ][1] bus is simplicity. It greatly abstracts nuances of communicating with RabbitMQ giving developers time to concentrate on writing the core application. The framework is great and makes processing" />
+    <meta name="twitter:url" content="https://www.mariuszwojcik.com/how-to-allow-easynetq-finish-processing-message-on-application-stop/" />
+    <meta name="twitter:label1" content="Written by" />
+    <meta name="twitter:data1" content="Mariusz Wojcik" />
+    <meta name="twitter:label2" content="Filed under" />
+    <meta name="twitter:data2" content="EasyNetQ" />
+    <meta name="twitter:site" content="@WojcikMariusz" />
+    
+    <script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "publisher": {
+        "@type": "Organization",
+        "name": "Mariusz Wojcik",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "https://www.mariuszwojcik.com/favicon.ico",
+            "width": 60,
+            "height": 60
+        }
+    },
+    "author": {
+        "@type": "Person",
+        "name": "Mariusz Wojcik",
+        "image": {
+            "@type": "ImageObject",
+            "url": "https://www.mariuszwojcik.com/content/images/2018/10/me.jpg",
+            "width": 200,
+            "height": 200
+        },
+        "url": "https://www.mariuszwojcik.com/author/mariusz/",
+        "sameAs": []
+    },
+    "headline": "How to allow EasyNetQ finish processing message on application stop",
+    "url": "https://www.mariuszwojcik.com/how-to-allow-easynetq-finish-processing-message-on-application-stop/",
+    "datePublished": "2014-05-10T16:19:00.000Z",
+    "dateModified": "2018-11-03T16:23:05.000Z",
+    "keywords": "EasyNetQ",
+    "description": "This post was written as an answer to one of the questions on EasyNetQ user group.The main principle of [EasyNetQ][1] bus is simplicity. It greatly abstracts nuances of communicating with RabbitMQ giving developers time to concentrate on writing the core application. The framework is great and makes processing",
+    "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://www.mariuszwojcik.com/"
+    }
+}
+    </script>
+
+    <script src="/public/ghost-sdk.min.js?v=8cb40155b8"></script>
+<script>
+ghost.init({
+	clientId: "ghost-frontend",
+	clientSecret: "4bee7de3b59d"
+});
+</script>
+    <meta name="generator" content="Ghost 2.1" />
+    <link rel="alternate" type="application/rss+xml" title="Mariusz Wojcik" href="https://www.mariuszwojcik.com/rss/" />
+     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/themes/prism.min.css" />
+<meta name="msvalidate.01" content="2AA206BBF39F5AFAB7A70AFF62E11ABE" />
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-55432606-3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-55432606-3');
+</script>
+
+</head>
+<body class="post-template tag-easynetq">
+
+    <div class="site-wrapper">
+
+        
+
+<header class="site-header outer">
+    <div class="inner">
+        <nav class="site-nav">
+    <div class="site-nav-left">
+                <a class="site-nav-logo" href="https://www.mariuszwojcik.com">Mariusz Wojcik</a>
+            <ul class="nav" role="menu">
+    <li class="nav-home" role="menuitem"><a href="https://www.mariuszwojcik.com/">Home</a></li>
+    <li class="nav-author" role="menuitem"><a href="https://www.mariuszwojcik.com/about-me/">Author</a></li>
+    <li class="nav-github" role="menuitem"><a href="https://github.com/mariuszwojcik">GitHub</a></li>
+    <li class="nav-presentations" role="menuitem"><a href="https://www.mariuszwojcik.com/presentations/">Presentations</a></li>
+</ul>
+
+    </div>
+    <div class="site-nav-right">
+        <div class="social-links">
+                <a class="social-link social-link-tw" href="https://twitter.com/WojcikMariusz" target="_blank" rel="noopener"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M30.063 7.313c-.813 1.125-1.75 2.125-2.875 2.938v.75c0 1.563-.188 3.125-.688 4.625a15.088 15.088 0 0 1-2.063 4.438c-.875 1.438-2 2.688-3.25 3.813a15.015 15.015 0 0 1-4.625 2.563c-1.813.688-3.75 1-5.75 1-3.25 0-6.188-.875-8.875-2.625.438.063.875.125 1.375.125 2.688 0 5.063-.875 7.188-2.5-1.25 0-2.375-.375-3.375-1.125s-1.688-1.688-2.063-2.875c.438.063.813.125 1.125.125.5 0 1-.063 1.5-.25-1.313-.25-2.438-.938-3.313-1.938a5.673 5.673 0 0 1-1.313-3.688v-.063c.813.438 1.688.688 2.625.688a5.228 5.228 0 0 1-1.875-2c-.5-.875-.688-1.813-.688-2.75 0-1.063.25-2.063.75-2.938 1.438 1.75 3.188 3.188 5.25 4.25s4.313 1.688 6.688 1.813a5.579 5.579 0 0 1 1.5-5.438c1.125-1.125 2.5-1.688 4.125-1.688s3.063.625 4.188 1.813a11.48 11.48 0 0 0 3.688-1.375c-.438 1.375-1.313 2.438-2.563 3.188 1.125-.125 2.188-.438 3.313-.875z"/></svg>
+</a>
+        </div>
+            <a class="rss-button" href="https://feedly.com/i/subscription/feed/https://www.mariuszwojcik.com/rss/" target="_blank" rel="noopener"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="6.18" cy="17.82" r="2.18"/><path d="M4 4.44v2.83c7.03 0 12.73 5.7 12.73 12.73h2.83c0-8.59-6.97-15.56-15.56-15.56zm0 5.66v2.83c3.9 0 7.07 3.17 7.07 7.07h2.83c0-5.47-4.43-9.9-9.9-9.9z"/></svg>
+</a>
+    </div>
+</nav>
+    </div>
+</header>
+
+
+<main id="site-main" class="site-main outer">
+    <div class="inner">
+
+        <article class="post-full post tag-easynetq no-image">
+
+            <header class="post-full-header">
+                <section class="post-full-meta">
+                    <time class="post-full-meta-date" datetime="2014-05-10">10 May 2014</time>
+                        <span class="date-divider">/</span> <a href="/tag/easynetq/">EasyNetQ</a>
+                </section>
+                <h1 class="post-full-title">How to allow EasyNetQ finish processing message on application stop</h1>
+            </header>
+
+
+            <section class="post-full-content">
+                <div class="post-content">
+                    <blockquote>This post was written as an answer to one of the questions on <a href="https://groups.google.com/forum/#!topic/easynetq/BSyfHSb5OAo">EasyNetQ</a> user group.</blockquote><p>The main principle of [EasyNetQ][1] bus is simplicity. It greatly abstracts nuances of communicating with RabbitMQ giving developers time to concentrate on writing the core application. The framework is great and makes processing messages really simple. But there are few scenarios when this simplicity becomes a small pain. One of those times is when you want to gracefully stop the application allowing it to finish processing current message.</p><p><em>This post is rather lengthy but I wanted to provide good explanation.</em></p><h1 id="acknowledging-messages">Acknowledging messages</h1><p>When it comes to acknowledging messages, the [EasyNetQ][1] takes fully care of that. The only case when message will be <strong>NACK</strong>ed is when the subscriber was disposed during processing a message. In any other case including errors1 the message is <strong>ACK</strong>ed. There is no manual <strong>ACK</strong> or <strong>NACK</strong> command available on the bus.</p><h1 id="unsubscribing-from-the-bus">Unsubscribing from the bus</h1><p>To unsubscribe from the bus you need to call <code>Dispose()</code> method on the result returned from the <code>Subscribe()</code> call. This will stop processing of the message and prevent new messages from delivering.</p><pre><code class="language-csharp">var consumer = bus.SubscribeAsync(&quot;stockChecker&quot;, m =&gt; Task.Factory.StartNew(() =&gt; StockCheckerHandler(m)));
+consumer.Dispose();
+</code></pre>
+<h1 id="allowing-to-finish-processing-message">Allowing to finish processing message</h1><p>If you want to allow your consumer code finish processing a message, before calling Dispose() you need to wait until the handling is completed <strong>and</strong> the bus <strong>ACK</strong>s the message.</p><p>Waiting for bus to <strong>ACK</strong> message</p><p>Unfortunately there is no event which will be raised when the <strong>ACK</strong> happened. You can assume the message was <strong>ACK</strong>ed when there is new message delivered for processing. So as long as there are messages waiting in the queue we can detect <strong>ACK</strong>. But what if there are no more messages in the queue? Well, you need to wait some arbitrary time to allow bus finishing the operation. In most cases it is very fast and a second or few should be enough. In the worst case scenario the message returns back to the queue and will be processed again.</p><h1 id="putting-it-all-together">Putting it all together</h1><p>I am using <a href="http://msdn.microsoft.com/en-us/library/system.threading.cancellationtoken"><code>CancellationToken</code></a> to signal application stop request and <a href="http://msdn.microsoft.com/en-us/library/system.threading.manualresetevent.aspx"><code>ManualResetEvent</code></a> to signal when message is being processed. The same <a href="http://msdn.microsoft.com/en-us/library/system.threading.manualresetevent.aspx"><code>ManualResetEvent</code></a> is also used to signal delivery of new message for processing which tells us that message was <strong>ACK</strong>ed and we may <code>Dispose</code> consumer. When waiting on <a href="http://msdn.microsoft.com/en-us/library/system.threading.manualresetevent.aspx"><code>ManualResetEvent</code></a> to signal, you can specify a timeout which is used here to force application stop if processing doesn’t finish in timely fashion.</p><p>There are four cases to consider.</p><h2 id="application-stopped-when-nothing-is-processed">APPLICATION STOPPED WHEN NOTHING IS PROCESSED</h2><p>Simplest case. When application stop requested and the consumer doesn’t process any message and we can safely <code>Dispose</code> it.</p><h2 id="consumer-busy-and-there-are-more-messages-in-the-queue">CONSUMER BUSY AND THERE ARE MORE MESSAGES IN THE QUEUE</h2><figure class="kg-card kg-image-card"><img src="http://www.mariuszwojcik.com/Images/How-to-allow-EasyNetQ-finish-processing-message-on-application-stop/gacefully-handle-application-stop-queue-has-more-messages.png" class="kg-image" alt="Gracefully handle application stop queue has more messages" title="Gracefully handle application stop queue has more messages"></figure><p>As mentioned earlier on, new message delivered to consumer is a signal that current message was <strong>ACK</strong>ed (<code>line 73</code>) and we can proceed with shutting down. To prevent loosing new message the consumer thread sleeps infinitely (<code>line 74</code>). That makes disposed bus to <strong>NACK</strong> the message moving it back to the top of the queue.</p><p>Main application thread signals the stop was requested using <a href="http://msdn.microsoft.com/en-us/library/system.threading.cancellationtoken"><code>CancellationToken</code></a> (<code>line 43</code>) and starts waiting for consumer to finish handling current message (<code>line 49</code>). Providing time out value to <code>WaitOne</code> method allows for forcing handler to stop in case it takes to long for it to finish and show message on the screen. If handling the message finishes before time out (<code>line 86</code>) then main thread receives signal (<code>line 54</code>) and starts waiting to see whether there is new message for processing (<code>line 55</code>).<br>Bus delivers new message to the consumer which detects that application stop was requested (<code>line 71</code>), signals that back to main thread (<code>line 72</code>) and sleeps the thread infinitely.<br>Main thread receive the signal (<code>line 57</code>) meaning message was <strong>ACK</strong>ed and consumer can be disposed (<code>line 59</code>). This will trigger <strong>NACK</strong> of the new message delivered by the bus. Finally, the bus is disposed and application stops.</p><h2 id="consumer-busy-but-no-more-messages-in-the-queue">CONSUMER BUSY BUT NO MORE MESSAGES IN THE QUEUE</h2><figure class="kg-card kg-image-card"><img src="http://www.mariuszwojcik.com/Images/How-to-allow-EasyNetQ-finish-processing-message-on-application-stop/gacefully-handle-application-stop-no-more-messages-in-the-queue.png" class="kg-image" alt="Gracefully handle application stop no more messages" title="Gracefully handle application stop no more messages"></figure><p>This is the trickiest path. Because there is no notification when bus <strong>ACK</strong>ed the message you can only sleep main thread giving enough time for the bus to finish operation. Using <code>WaitOne</code> with time out (<code>line 57</code>) of few seconds should guarantee successful <strong>ACK</strong> in most cases.</p><h2 id="consumer-doesn-t-finish-processing-message-in-timely-fashion">CONSUMER DOESN’T FINISH PROCESSING MESSAGE IN TIMELY FASHION</h2><figure class="kg-card kg-image-card"><img src="http://www.mariuszwojcik.com/Images/How-to-allow-EasyNetQ-finish-processing-message-on-application-stop/gacefully-handle-application-stop-timeout-expired.png" class="kg-image" alt="Gracefully handle application stop timeout expired" title="Gracefully handle application stop timeout expired"></figure><p>To make sure the application doesn’t hung on “exit” because long running consumer, when waiting on the signal that current message was processed you can use time out value (<code>line 49</code>). In case the wait timed out the application shows a message and disposes consumer. The message will go back to the queue (bus will <strong>NACK</strong> it) and will be ready for processing again.</p><p>Generally, message handlers should be designed in a way that processing doesn’t take to long. In cases long processing is required it is a good practice to periodically check <code>CancellationToken</code> for signal that application is shutting down, and if that happens to save current state of processing. When the messages is picked up again you can continue processing from the last known stage.</p><h1 id="reliability">Reliability</h1><p>As mentioned earlier, in small number of cases the consumer can be disposed before bus <strong>ACK</strong>es the message. This will happen only when there is no new message for processing and system gets busy, slowing down code execution in [EasyNetQ][1]. If that happens the message goes back to the queue and will be processed again. Assuming all consumer code is idempotent this will only result in loosing some processing time.</p><h1 id="sample-code">Sample code</h1><p>Below is a gist with sample implementation. To run it just call <code>Run()</code> method:</p><pre><code class="language-csharp">new DisposingConsumer().Run();
+</code></pre>
+<p>After application ends you should see 4 messages left on the <code>System.String:mscorlib_billing</code> queue.</p><pre><code class="language-csharp">using EasyNetQ;
+using EasyNetQ.Loggers;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace DeliveryMethods
+{
+    public class DisposingConsumer
+    {
+        private readonly IBus _bus;
+        private readonly CancellationTokenSource _cancellationTokenSource;
+
+        public DisposingConsumer()
+        {
+            _bus = RabbitHutch.CreateBus(&quot;host=localhost;prefetchcount=1&quot;, x =&gt; x.Register&lt;IEasyNetQLogger, NullLogger&gt;());
+
+            _cancellationTokenSource = new CancellationTokenSource();
+        }
+
+        private CancellationToken CancellationToken { get { return _cancellationTokenSource.Token; } }
+
+        public void Run()
+        {
+            var stockChecker = SubscribeStockCheckerConsumer();
+
+            var billingConsumerResetEvent = new ManualResetEvent(true);
+            var billingConsumer = SubscribeBillingConsumer(billingConsumerResetEvent);
+
+            int oId = 1;
+            while (oId &lt; 6)
+            {
+                _bus.PublishAsync(string.Format(&quot;New order {0}. Timestamp: {1}&quot;, oId++, DateTime.Now.TimeOfDay));
+                System.Threading.Thread.Sleep(TimeSpan.FromSeconds(1));
+            }
+
+            StopApplication(stockChecker, billingConsumerResetEvent, billingConsumer);
+            _bus.Dispose();
+        }
+
+        private void StopApplication(IDisposable stockChecker, ManualResetEvent billingConsumerResetEvent, IDisposable billingConsumer)
+        {
+            _cancellationTokenSource.Cancel();
+
+            Console.WriteLine(&quot;disposing stock checker consumer&quot;);
+            stockChecker.Dispose();
+
+            Console.WriteLine(&quot;disposing billing consumer&quot;);
+            if (!billingConsumerResetEvent.WaitOne(TimeSpan.FromSeconds(15)))
+            {
+                Console.WriteLine(&quot;Billing consumer hasn't finished on time and was forcefully disposed. The message was probably NACKed.&quot;);
+            }
+            else
+            {
+                billingConsumerResetEvent.Reset();
+                Console.WriteLine(&quot;Waiting for message to be ACKed.&quot;);
+                billingConsumerResetEvent.WaitOne(TimeSpan.FromSeconds(5));
+            }
+            billingConsumer.Dispose();
+
+            Console.WriteLine(&quot;All consumers stopped.&quot;);
+        }
+
+        private IDisposable SubscribeBillingConsumer(ManualResetEvent billingConsumerResetEvent)
+        {
+            return _bus.SubscribeAsync&lt;string&gt;(&quot;billing&quot;, m =&gt; Task.Factory.StartNew(() =&gt; BillingHandler(billingConsumerResetEvent, m)));
+        }
+
+        private void BillingHandler(ManualResetEvent billingConsumerResetEvent, string m)
+        {
+            if (CancellationToken.IsCancellationRequested)
+            {
+                billingConsumerResetEvent.Set();
+                Thread.Sleep(System.Threading.Timeout.Infinite);
+            }
+
+            billingConsumerResetEvent.Reset();
+            try
+            {
+                Console.WriteLine(&quot;Billing [2]: {0}&quot;, m);
+                System.Threading.Thread.Sleep(TimeSpan.FromSeconds(10));
+                Console.WriteLine(&quot;Billing [2] - peocessing finished&quot;);
+            }
+            finally
+            {
+                billingConsumerResetEvent.Set();
+            }
+        }
+
+        private IDisposable SubscribeStockCheckerConsumer()
+        {
+            var stockChecker = _bus.SubscribeAsync&lt;string&gt;(&quot;stockChecker&quot;, m =&gt; Task.Factory.StartNew(() =&gt; StockCheckerHandler(m)));
+            return stockChecker;
+        }
+
+        private static void StockCheckerHandler(string m)
+        {
+            Console.WriteLine(&quot;Stock   [1]: {0}&quot;, m);
+        }
+    }
+}
+</code></pre>
+
+                </div>
+            </section>
+
+
+            <footer class="post-full-footer">
+
+
+                    
+<section class="author-card">
+        <img class="author-profile-image" src="/content/images/2018/10/me.jpg" alt="Mariusz Wojcik" />
+    <section class="author-card-content">
+        <h4 class="author-card-name"><a href="/author/mariusz/">Mariusz Wojcik</a></h4>
+            <p>Read <a href="/author/mariusz/">more posts</a> by this author.</p>
+    </section>
+</section>
+<div class="post-full-footer-right">
+    <a class="author-card-button" href="/author/mariusz/">Read More</a>
+</div>
+
+
+            </footer>
+
+
+        </article>
+
+    </div>
+</main>
+
+<aside class="read-next outer">
+    <div class="inner">
+        <div class="read-next-feed">
+                <article class="read-next-card"
+                            style="background-image: url(/content/images/2019/01/Header-1.jpg)"
+                >
+                    <header class="read-next-card-header">
+                        <small class="read-next-card-header-sitetitle">&mdash; Mariusz Wojcik &mdash;</small>
+                        <h3 class="read-next-card-header-title"><a href="/tag/easynetq/">EasyNetQ</a></h3>
+                    </header>
+                    <div class="read-next-divider"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 14.5s2 3 5 3 5.5-2.463 5.5-5.5S21 6.5 18 6.5c-5 0-7 11-12 11C2.962 17.5.5 15.037.5 12S3 6.5 6 6.5s4.5 3.5 4.5 3.5"/></svg>
+</div>
+                    <div class="read-next-card-content">
+                        <ul>
+                            <li><a href="/rabbitmq-gets-support-for-delayed-messages-delivery/">RabbitMQ gets support for delayed messages delivery</a></li>
+                            <li><a href="/how-to-process-messages-in-parallel-using-easynetq/">How to process messages in parallel using EasyNetQ</a></li>
+                            <li><a href="/tell-easynetq-bus-what-queue-name-to-use-for-your-messages/">Tell EasyNetQ bus what Queue name to use for your messages</a></li>
+                        </ul>
+                    </div>
+                    <footer class="read-next-card-footer">
+                        <a href="/tag/easynetq/">See all 6 posts →</a>
+                    </footer>
+                </article>
+
+                <article class="post-card post tag-easynetq no-image">
+    <div class="post-card-content">
+        <a class="post-card-content-link" href="/how-to-process-messages-in-parallel-using-easynetq/">
+            <header class="post-card-header">
+                    <span class="post-card-tags">EasyNetQ</span>
+                <h2 class="post-card-title">How to process messages in parallel using EasyNetQ</h2>
+            </header>
+            <section class="post-card-excerpt">
+                <p>The IBus interface from [EasyNetQ][1] framework has SubscribeAsync() method which allows easily to span message handling between different threads. It uses standard TPL Tasks for delegating handler execution. Depending on the application,</p>
+            </section>
+        </a>
+        <footer class="post-card-meta">
+
+            <ul class="author-list">
+                <li class="author-list-item">
+
+                    <div class="author-name-tooltip">
+                        Mariusz Wojcik
+                    </div>
+
+                        <a href="/author/mariusz/" class="static-avatar"><img class="author-profile-image" src="/content/images/2018/10/me.jpg" alt="Mariusz Wojcik" /></a>
+                </li>
+            </ul>
+
+            <span class="reading-time">2 min read</span>
+
+        </footer>
+    </div>
+</article>
+
+                <article class="post-card post tag-easynetq no-image">
+    <div class="post-card-content">
+        <a class="post-card-content-link" href="/tell-easynetq-bus-what-queue-name-to-use-for-your-messages/">
+            <header class="post-card-header">
+                    <span class="post-card-tags">EasyNetQ</span>
+                <h2 class="post-card-title">Tell EasyNetQ bus what Queue name to use for your messages</h2>
+            </header>
+            <section class="post-card-excerpt">
+                <p>When you consume messages from EasyNetQ bus you do not need to worry about naming and creating queues or exchanges. That’s done for you. The framework will use a pattern when generating</p>
+            </section>
+        </a>
+        <footer class="post-card-meta">
+
+            <ul class="author-list">
+                <li class="author-list-item">
+
+                    <div class="author-name-tooltip">
+                        Mariusz Wojcik
+                    </div>
+
+                        <a href="/author/mariusz/" class="static-avatar"><img class="author-profile-image" src="/content/images/2018/10/me.jpg" alt="Mariusz Wojcik" /></a>
+                </li>
+            </ul>
+
+            <span class="reading-time">2 min read</span>
+
+        </footer>
+    </div>
+</article>
+
+        </div>
+    </div>
+</aside>
+
+<div class="floating-header">
+    <div class="floating-header-logo">
+        <a href="https://www.mariuszwojcik.com">
+            <span>Mariusz Wojcik</span>
+        </a>
+    </div>
+    <span class="floating-header-divider">&mdash;</span>
+    <div class="floating-header-title">How to allow EasyNetQ finish processing message on application stop</div>
+    <div class="floating-header-share">
+        <div class="floating-header-share-label">Share this <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M7.5 15.5V4a1.5 1.5 0 1 1 3 0v4.5h2a1 1 0 0 1 1 1h2a1 1 0 0 1 1 1H18a1.5 1.5 0 0 1 1.5 1.5v3.099c0 .929-.13 1.854-.385 2.748L17.5 23.5h-9c-1.5-2-5.417-8.673-5.417-8.673a1.2 1.2 0 0 1 1.76-1.605L7.5 15.5zm6-6v2m-3-3.5v3.5m6-1v2"/>
+</svg>
+</div>
+        <a class="floating-header-share-tw" href="https://twitter.com/share?text=How%20to%20allow%20EasyNetQ%20finish%20processing%20message%20on%20application%20stop&amp;url=https://www.mariuszwojcik.com/how-to-allow-easynetq-finish-processing-message-on-application-stop/"
+            onclick="window.open(this.href, 'share-twitter', 'width=550,height=235');return false;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M30.063 7.313c-.813 1.125-1.75 2.125-2.875 2.938v.75c0 1.563-.188 3.125-.688 4.625a15.088 15.088 0 0 1-2.063 4.438c-.875 1.438-2 2.688-3.25 3.813a15.015 15.015 0 0 1-4.625 2.563c-1.813.688-3.75 1-5.75 1-3.25 0-6.188-.875-8.875-2.625.438.063.875.125 1.375.125 2.688 0 5.063-.875 7.188-2.5-1.25 0-2.375-.375-3.375-1.125s-1.688-1.688-2.063-2.875c.438.063.813.125 1.125.125.5 0 1-.063 1.5-.25-1.313-.25-2.438-.938-3.313-1.938a5.673 5.673 0 0 1-1.313-3.688v-.063c.813.438 1.688.688 2.625.688a5.228 5.228 0 0 1-1.875-2c-.5-.875-.688-1.813-.688-2.75 0-1.063.25-2.063.75-2.938 1.438 1.75 3.188 3.188 5.25 4.25s4.313 1.688 6.688 1.813a5.579 5.579 0 0 1 1.5-5.438c1.125-1.125 2.5-1.688 4.125-1.688s3.063.625 4.188 1.813a11.48 11.48 0 0 0 3.688-1.375c-.438 1.375-1.313 2.438-2.563 3.188 1.125-.125 2.188-.438 3.313-.875z"/></svg>
+        </a>
+        <a class="floating-header-share-fb" href="https://www.facebook.com/sharer/sharer.php?u=https://www.mariuszwojcik.com/how-to-allow-easynetq-finish-processing-message-on-application-stop/"
+            onclick="window.open(this.href, 'share-facebook','width=580,height=296');return false;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M19 6h5V0h-5c-3.86 0-7 3.14-7 7v3H8v6h4v16h6V16h5l1-6h-6V7c0-.542.458-1 1-1z"/></svg>
+        </a>
+    </div>
+    <progress id="reading-progress" class="progress" value="0">
+        <div class="progress-container">
+            <span class="progress-bar"></span>
+        </div>
+    </progress>
+</div>
+
+
+
+
+        <footer class="site-footer outer">
+            <div class="site-footer-content inner">
+                <section class="copyright"><a href="https://www.mariuszwojcik.com">Mariusz Wojcik</a> &copy; 2025</section>
+                <nav class="site-footer-nav">
+                    <a href="https://www.mariuszwojcik.com">Latest Posts</a>
+                    
+                    <a href="https://twitter.com/WojcikMariusz" target="_blank" rel="noopener">Twitter</a>
+                    <a href="https://ghost.org" target="_blank" rel="noopener">Ghost</a>
+                </nav>
+            </div>
+        </footer>
+
+    </div>
+
+
+    <script>
+        var images = document.querySelectorAll('.kg-gallery-image img');
+        images.forEach(function (image) {
+            var container = image.closest('.kg-gallery-image');
+            var width = image.attributes.width.value;
+            var height = image.attributes.height.value;
+            var ratio = width / height;
+            container.style.flex = ratio + ' 1 0%';
+        })
+    </script>
+
+
+    <script
+        src="https://code.jquery.com/jquery-3.2.1.min.js"
+        integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+        crossorigin="anonymous">
+    </script>
+    <script type="text/javascript" src="/assets/js/jquery.fitvids.js?v=8cb40155b8"></script>
+
+
+    <script>
+
+// NOTE: Scroll performance is poor in Safari
+// - this appears to be due to the events firing much more slowly in Safari.
+//   Dropping the scroll event and using only a raf loop results in smoother
+//   scrolling but continuous processing even when not scrolling
+$(document).ready(function () {
+    // Start fitVids
+    var $postContent = $(".post-full-content");
+    $postContent.fitVids();
+    // End fitVids
+
+    var progressBar = document.querySelector('#reading-progress');
+    var header = document.querySelector('.floating-header');
+    var title = document.querySelector('.post-full-title');
+
+    var lastScrollY = window.scrollY;
+    var lastWindowHeight = window.innerHeight;
+    var lastDocumentHeight = $(document).height();
+    var ticking = false;
+
+    function onScroll() {
+        lastScrollY = window.scrollY;
+        requestTick();
+    }
+
+    function onResize() {
+        lastWindowHeight = window.innerHeight;
+        lastDocumentHeight = $(document).height();
+        requestTick();
+    }
+
+    function requestTick() {
+        if (!ticking) {
+            requestAnimationFrame(update);
+        }
+        ticking = true;
+    }
+
+    function update() {
+        var trigger = title.getBoundingClientRect().top + window.scrollY;
+        var triggerOffset = title.offsetHeight + 35;
+        var progressMax = lastDocumentHeight - lastWindowHeight;
+
+        // show/hide floating header
+        if (lastScrollY >= trigger + triggerOffset) {
+            header.classList.add('floating-active');
+        } else {
+            header.classList.remove('floating-active');
+        }
+
+        progressBar.setAttribute('max', progressMax);
+        progressBar.setAttribute('value', lastScrollY);
+
+        ticking = false;
+    }
+
+    window.addEventListener('scroll', onScroll, {passive: true});
+    window.addEventListener('resize', onResize, false);
+
+    update();
+
+});
+</script>
+
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/prism.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/components/prism-csharp.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/components/prism-fsharp.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/components/prism-markup.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/components/prism-powershell.min.js"></script>
+
+</body>
+</html>
