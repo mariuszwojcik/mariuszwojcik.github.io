@@ -1,0 +1,9 @@
+### me.jpg
+
+GET https://mwojcik.azurewebsites.net/content/images/2018/10/me.jpg
+
+### Header-1.jpg
+GET https://mwojcik.azurewebsites.net/content/images/2019/01/Header-1.jpg
+
+### favicon.ico
+GET https://mwojcik.azurewebsites.net/favicon.ico
