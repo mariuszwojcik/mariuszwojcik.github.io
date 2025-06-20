@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <title>Enums parsing performance</title>
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" type="text/css" href="/assets/built/screen.css?v=8cb40155b8" />
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="canonical" href="https://www.mariuszwojcik.com/enums-parsing-performance/" />
+    <meta name="referrer" content="no-referrer-when-downgrade" />
+    <link rel="amphtml" href="https://www.mariuszwojcik.com/enums-parsing-performance/amp/" />
+    
+    <meta property="og:site_name" content="Mariusz Wojcik" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Enums parsing performance" />
+    <meta property="og:description" content="Introduction Enum type has few helper methods which make parsing strings into related enum value easy. There is Parse, as well as TryParse. Both can takes an extra parameter to specify whether the operation is case sensitive. Unfortunately, it is not enough, as both methods will happily parse any natural" />
+    <meta property="og:url" content="https://www.mariuszwojcik.com/enums-parsing-performance/" />
+    <meta property="article:published_time" content="2019-06-20T18:54:36.000Z" />
+    <meta property="article:modified_time" content="2019-06-20T18:58:51.000Z" />
+    <meta property="article:tag" content="Performance" />
+    <meta property="article:tag" content="C#" />
+    
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Enums parsing performance" />
+    <meta name="twitter:description" content="Introduction Enum type has few helper methods which make parsing strings into related enum value easy. There is Parse, as well as TryParse. Both can takes an extra parameter to specify whether the operation is case sensitive. Unfortunately, it is not enough, as both methods will happily parse any natural" />
+    <meta name="twitter:url" content="https://www.mariuszwojcik.com/enums-parsing-performance/" />
+    <meta name="twitter:label1" content="Written by" />
+    <meta name="twitter:data1" content="Mariusz Wojcik" />
+    <meta name="twitter:label2" content="Filed under" />
+    <meta name="twitter:data2" content="Performance, C#" />
+    <meta name="twitter:site" content="@WojcikMariusz" />
+    
+    <script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "publisher": {
+        "@type": "Organization",
+        "name": "Mariusz Wojcik",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "https://www.mariuszwojcik.com/favicon.ico",
+            "width": 60,
+            "height": 60
+        }
+    },
+    "author": {
+        "@type": "Person",
+        "name": "Mariusz Wojcik",
+        "image": {
+            "@type": "ImageObject",
+            "url": "https://www.mariuszwojcik.com/content/images/2018/10/me.jpg",
+            "width": 200,
+            "height": 200
+        },
+        "url": "https://www.mariuszwojcik.com/author/mariusz/",
+        "sameAs": []
+    },
+    "headline": "Enums parsing performance",
+    "url": "https://www.mariuszwojcik.com/enums-parsing-performance/",
+    "datePublished": "2019-06-20T18:54:36.000Z",
+    "dateModified": "2019-06-20T18:58:51.000Z",
+    "keywords": "Performance, C#",
+    "description": "Introduction Enum type has few helper methods which make parsing strings into related enum value easy. There is Parse, as well as TryParse. Both can takes an extra parameter to specify whether the operation is case sensitive. Unfortunately, it is not enough, as both methods will happily parse any natural",
+    "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://www.mariuszwojcik.com/"
+    }
+}
+    </script>
+
+    <script src="/public/ghost-sdk.min.js?v=8cb40155b8"></script>
+<script>
+ghost.init({
+	clientId: "ghost-frontend",
+	clientSecret: "4bee7de3b59d"
+});
+</script>
+    <meta name="generator" content="Ghost 2.1" />
+    <link rel="alternate" type="application/rss+xml" title="Mariusz Wojcik" href="https://www.mariuszwojcik.com/rss/" />
+     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/themes/prism.min.css" />
+<meta name="msvalidate.01" content="2AA206BBF39F5AFAB7A70AFF62E11ABE" />
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-55432606-3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-55432606-3');
+</script>
+
+</head>
+<body class="post-template tag-performance tag-c">
+
+    <div class="site-wrapper">
+
+        
+
+<header class="site-header outer">
+    <div class="inner">
+        <nav class="site-nav">
+    <div class="site-nav-left">
+                <a class="site-nav-logo" href="https://www.mariuszwojcik.com">Mariusz Wojcik</a>
+            <ul class="nav" role="menu">
+    <li class="nav-home" role="menuitem"><a href="https://www.mariuszwojcik.com/">Home</a></li>
+    <li class="nav-author" role="menuitem"><a href="https://www.mariuszwojcik.com/about-me/">Author</a></li>
+    <li class="nav-github" role="menuitem"><a href="https://github.com/mariuszwojcik">GitHub</a></li>
+    <li class="nav-presentations" role="menuitem"><a href="https://www.mariuszwojcik.com/presentations/">Presentations</a></li>
+</ul>
+
+    </div>
+    <div class="site-nav-right">
+        <div class="social-links">
+                <a class="social-link social-link-tw" href="https://twitter.com/WojcikMariusz" target="_blank" rel="noopener"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M30.063 7.313c-.813 1.125-1.75 2.125-2.875 2.938v.75c0 1.563-.188 3.125-.688 4.625a15.088 15.088 0 0 1-2.063 4.438c-.875 1.438-2 2.688-3.25 3.813a15.015 15.015 0 0 1-4.625 2.563c-1.813.688-3.75 1-5.75 1-3.25 0-6.188-.875-8.875-2.625.438.063.875.125 1.375.125 2.688 0 5.063-.875 7.188-2.5-1.25 0-2.375-.375-3.375-1.125s-1.688-1.688-2.063-2.875c.438.063.813.125 1.125.125.5 0 1-.063 1.5-.25-1.313-.25-2.438-.938-3.313-1.938a5.673 5.673 0 0 1-1.313-3.688v-.063c.813.438 1.688.688 2.625.688a5.228 5.228 0 0 1-1.875-2c-.5-.875-.688-1.813-.688-2.75 0-1.063.25-2.063.75-2.938 1.438 1.75 3.188 3.188 5.25 4.25s4.313 1.688 6.688 1.813a5.579 5.579 0 0 1 1.5-5.438c1.125-1.125 2.5-1.688 4.125-1.688s3.063.625 4.188 1.813a11.48 11.48 0 0 0 3.688-1.375c-.438 1.375-1.313 2.438-2.563 3.188 1.125-.125 2.188-.438 3.313-.875z"/></svg>
+</a>
+        </div>
+            <a class="rss-button" href="https://feedly.com/i/subscription/feed/https://www.mariuszwojcik.com/rss/" target="_blank" rel="noopener"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="6.18" cy="17.82" r="2.18"/><path d="M4 4.44v2.83c7.03 0 12.73 5.7 12.73 12.73h2.83c0-8.59-6.97-15.56-15.56-15.56zm0 5.66v2.83c3.9 0 7.07 3.17 7.07 7.07h2.83c0-5.47-4.43-9.9-9.9-9.9z"/></svg>
+</a>
+    </div>
+</nav>
+    </div>
+</header>
+
+
+<main id="site-main" class="site-main outer">
+    <div class="inner">
+
+        <article class="post-full post tag-performance tag-c no-image">
+
+            <header class="post-full-header">
+                <section class="post-full-meta">
+                    <time class="post-full-meta-date" datetime="2019-06-20">20 June 2019</time>
+                        <span class="date-divider">/</span> <a href="/tag/performance/">Performance</a>
+                </section>
+                <h1 class="post-full-title">Enums parsing performance</h1>
+            </header>
+
+
+            <section class="post-full-content">
+                <div class="post-content">
+                    <h2 id="introduction">Introduction</h2>
+<p><code>Enum</code> type has few helper methods which make parsing strings into related <code>enum</code> value easy. There is <a href="https://docs.microsoft.com/en-us/dotnet/api/system.enum.parse"><code>Parse</code></a>, as well as <a href="https://docs.microsoft.com/en-us/dotnet/api/system.enum.tryparse?view"><code>TryParse</code></a>. Both can takes an extra parameter to specify whether the operation is case sensitive.</p>
+<p>Unfortunately, it is not enough, as both methods will happily parse any natural number which fits underlying type (<code>int</code> by default):</p>
+<pre><code class="language-csharp">   enum Colour { Red = 1, Green = 2, Blue = 3 }
+
+   var s = Colour.TryParse(&quot;4&quot;, out Colour c)
+
+   // s = true, c = 4
+</code></pre>
+<p>To determine whether given value exists in specified enumeration you can use <a href="https://docs.microsoft.com/en-us/dotnet/api/system.enum.isdefined"><code>Enum.IsDefined</code></a> method:</p>
+<pre><code class="language-csharp">   var a = Enum.IsDefined(typeof(Colour), c)
+   // a = false
+</code></pre>
+<h2 id="performanceconsiderations">Performance considerations</h2>
+<p>Turns out above methods, as useful as they are, result in very poor performance. For majority of cases (see note at the end of this article) the performance would be acceptable, but in high-performance code this shows up as a bottleneck.</p>
+<p>Fortunately, this can be easily solved through use of dictionary as a map between text and <code>enum</code> value:</p>
+<pre><code class="language-csharp">   enum Colour { Red = 1, Green = 2, Blue = 3 }
+
+    var d = new Dictionary&lt;string, Colour&gt;
+        {
+            { &quot;Red&quot;, Colour.Red},
+            { &quot;1&quot;, Colour.Red},
+            { &quot;Green&quot;, Colour.Green},
+            { &quot;2&quot;, Colour.Green},
+            { &quot;Blue&quot;, Colour.Blue},
+            { &quot;3&quot;, Colour.Blue}
+        };
+   var s =  d.TryGetValue(&quot;4&quot;, out var c)
+
+    // s = false, c = 0;
+</code></pre>
+<p>That will perform much better but there are two potential issues:</p>
+<ul>
+<li><em>code repetition</em> - values are defined twice: first in enum definition and then when filling up dictionary</li>
+<li>case-sensitivity - current solution doesn't cover case-insensitive parsing.</li>
+</ul>
+<h3 id="coderepetition">Code repetition</h3>
+<p>Although it may not seem like much of a problem now, it could lead to a bug when we add new item to the <code>Colour</code> enum and forget to add it into related dictionary. By using <a href="https://docs.microsoft.com/en-us/dotnet/api/system.enum.getvalues"><code>Enum.GetValues()</code></a> method we can automatically fill dictionary with relevant values:</p>
+<pre><code class="language-csharp">    Enum
+    .GetValues(typeof(Colour))
+    .Cast&lt;Colour&gt;()
+    .SelectMany(v =&gt;
+        new[] {
+            (n: v.ToString().ToLower(), v), // get string representation of value
+            (n: ((int)v).ToString(), v)     // get int representation of value
+    })
+    .ToDictionary(i =&gt; i.n, i =&gt; i.v);
+</code></pre>
+<h3 id="caseinsensitiveparsing">Case insensitive parsing</h3>
+<p>If required, case-insensitive parsing may be done by providing relevant <code>IEqualityComparer&lt;TKey&gt;</code> to the constructor of the dictionary:</p>
+<pre><code class="language-csharp">    Enum
+    .GetValues(typeof(Colour))
+    .Cast&lt;Colour&gt;()
+    .SelectMany(v =&gt;
+        new[] {
+                        (n: v.ToString().ToLower(), v), // get string representation of value
+                        (n: ((int)v).ToString(), v)     // get int representation of value
+    })
+    .ToDictionary(i =&gt; i.n, i =&gt; i.v, StringComparer.OrdinalIgnoreCase);
+</code></pre>
+<h2 id="benchmarking">Benchmarking</h2>
+<p>To verify impact of changes on performance I am using <a href="https://benchmarkdotnet.org/">BenchmarkDotNet</a> which is great and easy to use library for benchmarking .NET code.</p>
+<p>I set up three test cases:</p>
+<ul>
+<li>Using <code>TryParse</code> and <code>IsDefined</code></li>
+<li>Using <code>TryParse</code> only - good in cases where you can be sure values to parse are valid</li>
+<li>Using mapping <code>Dictionary</code> discussed above</li>
+</ul>
+<p>Running it on my laptop with Intel i7 CPU I got following results:</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th style="text-align:right">Mean</th>
+<th style="text-align:right">Error</th>
+<th style="text-align:right">StdDev</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TryParseAndIsDefined</td>
+<td style="text-align:right">549.42 ms</td>
+<td style="text-align:right">6.479 ms</td>
+<td style="text-align:right">6.060 ms</td>
+</tr>
+<tr>
+<td>TryParseOnly</td>
+<td style="text-align:right">313.08 ms</td>
+<td style="text-align:right">4.472 ms</td>
+<td style="text-align:right">3.965 ms</td>
+</tr>
+<tr>
+<td>UsingDictionary</td>
+<td style="text-align:right">71.85 ms</td>
+<td style="text-align:right">1.331 ms</td>
+<td style="text-align:right">1.245 ms</td>
+</tr>
+</tbody>
+</table>
+<p>As you can see, optimised version with mapping dictionary is over 7 time faster then <code>TryParse</code> with <code>IsDefined</code> with much lower error level!</p>
+<p>Having that code in a tight-loop which is executed thousands of times a minute can significantly improve performance.</p>
+<p><em>You can find Benchmark code here: <a href="https://github.com/mariuszwojcik/Blog-posts-code/blob/master/Benchmarks/EnumParse.cs">https://github.com/mariuszwojcik/Blog-posts-code/blob/master/Benchmarks/EnumParse.cs</a></em></p>
+<h2 id="noteonperformanceoptimisations">Note on performance optimisations</h2>
+<p>Performance optimisations can lead to code which is less readable and harder to maintain. It's always a good idea to profile the application to see whether optimisation is required. <a href="https://benchmarkdotnet.org/">BenchmarkDotNet</a> is a great tool to measure different approaches to solve the problem and how they improve speed and memory management.</p>
+
+                </div>
+            </section>
+
+
+            <footer class="post-full-footer">
+
+
+                    
+<section class="author-card">
+        <img class="author-profile-image" src="/content/images/2018/10/me.jpg" alt="Mariusz Wojcik" />
+    <section class="author-card-content">
+        <h4 class="author-card-name"><a href="/author/mariusz/">Mariusz Wojcik</a></h4>
+            <p>Read <a href="/author/mariusz/">more posts</a> by this author.</p>
+    </section>
+</section>
+<div class="post-full-footer-right">
+    <a class="author-card-button" href="/author/mariusz/">Read More</a>
+</div>
+
+
+            </footer>
+
+
+        </article>
+
+    </div>
+</main>
+
+<aside class="read-next outer">
+    <div class="inner">
+        <div class="read-next-feed">
+
+                <article class="post-card post tag-rx-net no-image">
+    <div class="post-card-content">
+        <a class="post-card-content-link" href="/rx-net-buffer-concurrency/">
+            <header class="post-card-header">
+                    <span class="post-card-tags">Rx.NET</span>
+                <h2 class="post-card-title">Rx.NET Buffer concurrency</h2>
+            </header>
+            <section class="post-card-excerpt">
+                <p>Rx.NET, part of ReactiveX, contains Buffer operator which does: periodically gather items emitted by an Observable into bundles and emit these bundles rather than emitting the items one at a time There</p>
+            </section>
+        </a>
+        <footer class="post-card-meta">
+
+            <ul class="author-list">
+                <li class="author-list-item">
+
+                    <div class="author-name-tooltip">
+                        Mariusz Wojcik
+                    </div>
+
+                        <a href="/author/mariusz/" class="static-avatar"><img class="author-profile-image" src="/content/images/2018/10/me.jpg" alt="Mariusz Wojcik" /></a>
+                </li>
+            </ul>
+
+            <span class="reading-time">2 min read</span>
+
+        </footer>
+    </div>
+</article>
+
+                <article class="post-card post tag-rabbitmq no-image">
+    <div class="post-card-content">
+        <a class="post-card-content-link" href="/performance-of-delayed-message-exchange/">
+            <header class="post-card-header">
+                    <span class="post-card-tags">RabbitMQ</span>
+                <h2 class="post-card-title">Performance of Delayed Message Exchange</h2>
+            </header>
+            <section class="post-card-excerpt">
+                <p>The RabbitMQ has new exchange type which allows for delayed message delivery. You can read more about the Delayed Message plugin here and here.</p>
+            </section>
+        </a>
+        <footer class="post-card-meta">
+
+            <ul class="author-list">
+                <li class="author-list-item">
+
+                    <div class="author-name-tooltip">
+                        Mariusz Wojcik
+                    </div>
+
+                        <a href="/author/mariusz/" class="static-avatar"><img class="author-profile-image" src="/content/images/2018/10/me.jpg" alt="Mariusz Wojcik" /></a>
+                </li>
+            </ul>
+
+            <span class="reading-time">2 min read</span>
+
+        </footer>
+    </div>
+</article>
+
+        </div>
+    </div>
+</aside>
+
+<div class="floating-header">
+    <div class="floating-header-logo">
+        <a href="https://www.mariuszwojcik.com">
+            <span>Mariusz Wojcik</span>
+        </a>
+    </div>
+    <span class="floating-header-divider">&mdash;</span>
+    <div class="floating-header-title">Enums parsing performance</div>
+    <div class="floating-header-share">
+        <div class="floating-header-share-label">Share this <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M7.5 15.5V4a1.5 1.5 0 1 1 3 0v4.5h2a1 1 0 0 1 1 1h2a1 1 0 0 1 1 1H18a1.5 1.5 0 0 1 1.5 1.5v3.099c0 .929-.13 1.854-.385 2.748L17.5 23.5h-9c-1.5-2-5.417-8.673-5.417-8.673a1.2 1.2 0 0 1 1.76-1.605L7.5 15.5zm6-6v2m-3-3.5v3.5m6-1v2"/>
+</svg>
+</div>
+        <a class="floating-header-share-tw" href="https://twitter.com/share?text=Enums%20parsing%20performance&amp;url=https://www.mariuszwojcik.com/enums-parsing-performance/"
+            onclick="window.open(this.href, 'share-twitter', 'width=550,height=235');return false;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M30.063 7.313c-.813 1.125-1.75 2.125-2.875 2.938v.75c0 1.563-.188 3.125-.688 4.625a15.088 15.088 0 0 1-2.063 4.438c-.875 1.438-2 2.688-3.25 3.813a15.015 15.015 0 0 1-4.625 2.563c-1.813.688-3.75 1-5.75 1-3.25 0-6.188-.875-8.875-2.625.438.063.875.125 1.375.125 2.688 0 5.063-.875 7.188-2.5-1.25 0-2.375-.375-3.375-1.125s-1.688-1.688-2.063-2.875c.438.063.813.125 1.125.125.5 0 1-.063 1.5-.25-1.313-.25-2.438-.938-3.313-1.938a5.673 5.673 0 0 1-1.313-3.688v-.063c.813.438 1.688.688 2.625.688a5.228 5.228 0 0 1-1.875-2c-.5-.875-.688-1.813-.688-2.75 0-1.063.25-2.063.75-2.938 1.438 1.75 3.188 3.188 5.25 4.25s4.313 1.688 6.688 1.813a5.579 5.579 0 0 1 1.5-5.438c1.125-1.125 2.5-1.688 4.125-1.688s3.063.625 4.188 1.813a11.48 11.48 0 0 0 3.688-1.375c-.438 1.375-1.313 2.438-2.563 3.188 1.125-.125 2.188-.438 3.313-.875z"/></svg>
+        </a>
+        <a class="floating-header-share-fb" href="https://www.facebook.com/sharer/sharer.php?u=https://www.mariuszwojcik.com/enums-parsing-performance/"
+            onclick="window.open(this.href, 'share-facebook','width=580,height=296');return false;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M19 6h5V0h-5c-3.86 0-7 3.14-7 7v3H8v6h4v16h6V16h5l1-6h-6V7c0-.542.458-1 1-1z"/></svg>
+        </a>
+    </div>
+    <progress id="reading-progress" class="progress" value="0">
+        <div class="progress-container">
+            <span class="progress-bar"></span>
+        </div>
+    </progress>
+</div>
+
+
+
+
+        <footer class="site-footer outer">
+            <div class="site-footer-content inner">
+                <section class="copyright"><a href="https://www.mariuszwojcik.com">Mariusz Wojcik</a> &copy; 2025</section>
+                <nav class="site-footer-nav">
+                    <a href="https://www.mariuszwojcik.com">Latest Posts</a>
+                    
+                    <a href="https://twitter.com/WojcikMariusz" target="_blank" rel="noopener">Twitter</a>
+                    <a href="https://ghost.org" target="_blank" rel="noopener">Ghost</a>
+                </nav>
+            </div>
+        </footer>
+
+    </div>
+
+
+    <script>
+        var images = document.querySelectorAll('.kg-gallery-image img');
+        images.forEach(function (image) {
+            var container = image.closest('.kg-gallery-image');
+            var width = image.attributes.width.value;
+            var height = image.attributes.height.value;
+            var ratio = width / height;
+            container.style.flex = ratio + ' 1 0%';
+        })
+    </script>
+
+
+    <script
+        src="https://code.jquery.com/jquery-3.2.1.min.js"
+        integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+        crossorigin="anonymous">
+    </script>
+    <script type="text/javascript" src="/assets/js/jquery.fitvids.js?v=8cb40155b8"></script>
+
+
+    <script>
+
+// NOTE: Scroll performance is poor in Safari
+// - this appears to be due to the events firing much more slowly in Safari.
+//   Dropping the scroll event and using only a raf loop results in smoother
+//   scrolling but continuous processing even when not scrolling
+$(document).ready(function () {
+    // Start fitVids
+    var $postContent = $(".post-full-content");
+    $postContent.fitVids();
+    // End fitVids
+
+    var progressBar = document.querySelector('#reading-progress');
+    var header = document.querySelector('.floating-header');
+    var title = document.querySelector('.post-full-title');
+
+    var lastScrollY = window.scrollY;
+    var lastWindowHeight = window.innerHeight;
+    var lastDocumentHeight = $(document).height();
+    var ticking = false;
+
+    function onScroll() {
+        lastScrollY = window.scrollY;
+        requestTick();
+    }
+
+    function onResize() {
+        lastWindowHeight = window.innerHeight;
+        lastDocumentHeight = $(document).height();
+        requestTick();
+    }
+
+    function requestTick() {
+        if (!ticking) {
+            requestAnimationFrame(update);
+        }
+        ticking = true;
+    }
+
+    function update() {
+        var trigger = title.getBoundingClientRect().top + window.scrollY;
+        var triggerOffset = title.offsetHeight + 35;
+        var progressMax = lastDocumentHeight - lastWindowHeight;
+
+        // show/hide floating header
+        if (lastScrollY >= trigger + triggerOffset) {
+            header.classList.add('floating-active');
+        } else {
+            header.classList.remove('floating-active');
+        }
+
+        progressBar.setAttribute('max', progressMax);
+        progressBar.setAttribute('value', lastScrollY);
+
+        ticking = false;
+    }
+
+    window.addEventListener('scroll', onScroll, {passive: true});
+    window.addEventListener('resize', onResize, false);
+
+    update();
+
+});
+</script>
+
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/prism.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/components/prism-csharp.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/components/prism-fsharp.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/components/prism-markup.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/components/prism-powershell.min.js"></script>
+
+</body>
+</html>
