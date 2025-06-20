@@ -430,7 +430,8 @@ body {
     padding-bottom: 12px;
     color: #fff;
     background: #090a0b no-repeat 50%;
-    background-size: cover
+    background-size: cover;
+    max-height: 700px;
 }
 
 .site-header:before {
@@ -467,9 +468,9 @@ body {
     justify-content: center;
     -ms-flex-align: center;
     align-items: center;
-    padding: 20vw 4vw;
+    padding: 16vw 4vw;
     min-height: 200px;
-    max-height: 450px;
+    max-height: 550px;
     text-align: center
 }
 
